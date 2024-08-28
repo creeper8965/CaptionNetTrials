@@ -131,7 +131,7 @@ def TrainCycle(dataloader):
         loss = model(pixel_values=img, labels=lab, decoder_attention_mask=atm).loss
         loss.backward()
 
-        nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         optimizer.step()
         scheduler.step()
@@ -144,7 +144,7 @@ def TrainCycle(dataloader):
 if __name__ == '__main__': #TOKENIZERS_PARALLELISM=true python train.py
     LR = 2e-5
     EPOCH = 10
-    BATCH = 12
+    BATCH = 8
     wandb.init(
         # set the wandb project where this run will be logged
         project="VisionEncodeDecodeTransformer_captionnet",
@@ -182,7 +182,7 @@ if __name__ == '__main__': #TOKENIZERS_PARALLELISM=true python train.py
     scheduler = get_scheduler(
         "cosine",#linear
         optimizer=optimizer,
-        num_warmup_steps=int(0.06 * total_steps),  # 10% of total steps for warmup
+        num_warmup_steps=int(0.10 * total_steps),  # 10% of total steps for warmup
         num_training_steps=total_steps
     )
 
@@ -196,7 +196,7 @@ if __name__ == '__main__': #TOKENIZERS_PARALLELISM=true python train.py
 
         for pqrFile in parquet_files:
             dataset = ParquetDataset(pqrFile, transforms=imageProcessor, tokenizer=tokenizer)
-            dataloader = DataLoader(dataset=dataset, batch_size=BATCH, shuffle=True,num_workers=2)
+            dataloader = DataLoader(dataset=dataset, batch_size=BATCH, shuffle=True,num_workers=4)
             TrainCycle(dataloader)
 
     wandb.finish()
