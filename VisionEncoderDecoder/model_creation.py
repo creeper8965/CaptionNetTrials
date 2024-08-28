@@ -10,9 +10,10 @@ Test = True
 
 
 #Vision Encoder
-encoderConf = ViTConfig.from_pretrained('ViT-tiny/')
-encoderModel = ViTModel.from_pretrained('ViT-tiny/')
-encoderProcessor = ViTImageProcessorFast.from_pretrained('ViT-tiny/')
+VitPath = 'ViT-small/'
+encoderConf = ViTConfig.from_pretrained(VitPath)
+encoderModel = ViTModel.from_pretrained(VitPath)
+encoderProcessor = ViTImageProcessorFast.from_pretrained(VitPath)
 
 
 if Bert:
@@ -35,9 +36,9 @@ if Bart:
                         encoder_layers=2,
                         encoder_ffn_dim=1024,
                         encoder_attention_heads=4,
-                        decoder_layers=5,
+                        decoder_layers=8,
                         decoder_ffn_dim=2048,
-                        decoder_attention_heads=8,
+                        decoder_attention_heads=16,
                         encoder_layerdrop=0,
                         decoder_layerdrop=0,
                         activation_function='gelu_fast',
@@ -49,7 +50,8 @@ if Bart:
                         is_encoder_decoder=False,
                         decoder_start_token_id=2,
                         forced_eos_token_id=2,
-                        is_decoder=True
+                        is_decoder=True,
+                        add_cross_attention=False,
                         )
     decoderModel = BartForCausalLM(decoderConf) #.get_decoder()
 
