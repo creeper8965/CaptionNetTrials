@@ -10,8 +10,8 @@ FaceDEIT = True
 Bert = False
 Bart = False
 RoBerta = False
-TinyBert = False #shit only broke after 2 Ep
-BertMLM = True
+TinyBert = True 
+BertMLM = False
 #Test Model
 Test = True
 
@@ -79,9 +79,11 @@ if RoBerta:
     
 if TinyBert:
     from transformers import BertConfig, BertTokenizerFast, BertLMHeadModel
+    tinyBertPath = 'huawei-noah/TinyBERT_General_4L_312D' #huawei-noah/TinyBERT_General_6L_768D
     decoderTokenizer = BertTokenizerFast.from_pretrained('BertTokenizer/')
     decoderTokenizer.model_max_length = 324
-    decoderConf = BertConfig(vocab_size=decoderTokenizer.vocab_size, hidden_size=324, num_hidden_layers=1, num_attention_heads=9, intermediate_size=768, hidden_act='gelu_fast', bos_token_id=102, eos_token_id=103, max_position_embeddings=324, is_decoder=True)
+    decoderConf = BertConfig.from_pretrained(tinyBertPath)
+    decoderConf.is_decoder=True
     decoderModel = BertLMHeadModel(decoderConf)
 
 if BertMLM:
@@ -100,16 +102,17 @@ if BertMLM:
     #OPTIONAL - Copies Manga ocr base - 2 layers, FaceDeit
 
 
+
 config = VisionEncoderDecoderConfig.from_encoder_decoder_configs(encoder_config=encoderConf, decoder_config=decoderConf)
 config.decoder_start_token_id = decoderTokenizer.cls_token_id
 config.pad_token_id = decoderTokenizer.pad_token_id
-config.tie_word_embeddings = False
+config.tie_word_embeddings = True #can change to false, is needed for bertmlm?
 model = VisionEncoderDecoderModel(config=config, encoder=encoderModel, decoder=decoderModel)
 
 print(model)
 print(model.get_memory_footprint() /1000 /1000,'MB')
 
-model.save_pretrained('NewModel/',safe_serialization=False)
+model.save_pretrained('NewModel/') #,safe_serialization=False)
 decoderTokenizer.save_pretrained('NewModel/')
 encoderProcessor.save_pretrained('NewModel/')
 
