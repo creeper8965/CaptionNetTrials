@@ -9,6 +9,7 @@ import os
 import pandas as pd
 from torchvision.transforms import v2
 
+from AdEMAMix import AdEMAMix
 import wandb
 
 torch.set_float32_matmul_precision('medium')
@@ -67,28 +68,28 @@ class InfiniteDataLoader:
             data = next(self.data_iter)
         return data
 
-if __name__ == '__main__':
+if __name__ == '__main__': #TOKENIZERS_PARALLELISM=true python train.py
     BATCH = 1920 #512
     STEPS = 10000
     DEVICE = 'cuda'
-    LR = 3e-3
+    LR = 5e-3
 
     wandb.init(
         # set the wandb project where this run will be logged
-        project="SigLip",
+        project="VisionEncodeDecodeTransformer_captionnet",
 
         # track hyperparameters and run metadata
         config={
         "learning_rate": LR,
-        "architecture": "SigLip",
+        "architecture": "ViT-BertForPreTraining",
         "dataset": "FLICKR8K",
         "epochs": STEPS,
         }
     )
 
     Processor = SiglipProcessor.from_pretrained("google/siglip-base-patch16-224")
-    VisionConfig = SiglipVisionConfig(hidden_size=192, intermediate_size=512, num_hidden_layers=12, num_attention_heads=8, num_channels=3, image_size=224, patch_size=16)
-    TextConfig = SiglipTextConfig(hidden_size=192, intermediate_size=512, num_hidden_layers=12, num_attention_heads=8)
+    VisionConfig = SiglipVisionConfig(hidden_size=368, intermediate_size=512, num_hidden_layers=8, num_attention_heads=8, num_channels=3, image_size=224, patch_size=16)
+    TextConfig = SiglipTextConfig(hidden_size=368, intermediate_size=512, num_hidden_layers=8, num_attention_heads=8)
 
     ModelConfig = SiglipConfig.from_text_vision_configs(TextConfig, VisionConfig)
     ModelConfig._attn_implementation == "flash_attention_2"
@@ -100,7 +101,8 @@ if __name__ == '__main__':
     dl = DataLoader(ds, batch_size=BATCH, shuffle=True, num_workers=4)
     dl = InfiniteDataLoader(dl)
 
-    optimzer = torch.optim.AdamW(model.parameters(), lr=3e-3)
+#     optimzer = torch.optim.AdamW(model.parameters(), lr=LR)
+    optimzer = AdEMAMix(model.parameters(), lr=LR)
     scheduler = transformers.get_scheduler(
         "cosine",#linear
         optimizer=optimzer,
