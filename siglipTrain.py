@@ -1,3 +1,4 @@
+#pip install transformers wandb flash-attn torchvision --upgrade ## wandb login
 import transformers
 from transformers import SiglipProcessor, SiglipModel, SiglipConfig, SiglipTextConfig, SiglipVisionConfig, SiglipTokenizer
 import tqdm
